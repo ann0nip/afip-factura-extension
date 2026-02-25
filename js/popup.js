@@ -396,8 +396,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#btn-export').addEventListener('click', exportConfig);
   $('#btn-import').addEventListener('click', importConfig);
   $('#import-file').addEventListener('change', handleImportFile);
-  $('#btn-reset').addEventListener('click', () => {
+  $('#btn-reset').addEventListener('click', async () => {
     setUIFromConfig(DEFAULT_CONFIG);
+    await chrome.storage.local.remove('afipConfig');
     updateStatus('Configuracion reseteada a valores por defecto.', 'info');
   });
 });
