@@ -325,7 +325,7 @@ async function runAutomation() {
   // This prevents the race condition where page navigation happens before storage write
   await chrome.storage.local.set({ afipRunning: true, afipConfig: config });
 
-  updateStatus('Ejecutando automatizacion...', 'running');
+  updateStatus('Ejecutando automatizacion', 'running');
   $('#btn-run').disabled = true;
   $('#btn-stop').disabled = false;
 

@@ -1,124 +1,221 @@
 /* ========================================
-   AFIP Factura Automática - Content Script Styles
-   Overlay y notificaciones inyectadas en la página de AFIP
+   AutoFactura ARCA - Content Script Styles
+   Overlay and notifications injected into the ARCA page.
+   All selectors scoped via #afip-ext-overlay to avoid
+   conflicts with the host page styles.
    ======================================== */
 
+/* ---- Keyframes ---- */
+@keyframes afip-ext-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes afip-ext-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+  }
+}
+
+@keyframes afip-ext-spinner {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes afip-ext-fade-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Overlay container ---- */
 #afip-ext-overlay {
   position: fixed;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
   z-index: 99999;
+  width: 320px !important;
+  max-width: 320px !important;
+  min-width: 320px !important;
   background: #ffffff;
-  border: 1px solid #dadce0;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 14px 18px;
-  max-width: 340px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05),
+    0 20px 40px -8px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
-  color: #202124;
-  transition: all 0.3s ease;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  animation: afip-ext-slide-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-#afip-ext-overlay.hidden {
-  display: none;
+#afip-ext-overlay.removing {
+  animation: afip-ext-slide-out 0.22s cubic-bezier(0.4, 0, 1, 1) both;
 }
 
+/* ---- Header ---- */
 #afip-ext-overlay .ext-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  padding: 10px 12px 10px 14px;
 }
 
 #afip-ext-overlay .ext-title {
-  font-weight: 600;
-  font-size: 13px;
-  color: #1a73e8;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
 }
 
 #afip-ext-overlay .ext-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
-  color: #5f6368;
-  padding: 2px 4px;
-  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+  padding: 0;
 }
 
 #afip-ext-overlay .ext-close:hover {
-  background: #f1f3f4;
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
+/* ---- Status area ---- */
 #afip-ext-overlay .ext-status {
-  padding: 8px 10px;
-  border-radius: 6px;
+  position: relative;
+  margin: 0 12px;
+  padding: 9px 10px 9px 32px;
+  border-radius: 8px;
   font-size: 12px;
-  line-height: 1.5;
-  margin-bottom: 8px;
+  font-weight: 500;
+  line-height: 1.4;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
+/* Status icon (::before) */
+#afip-ext-overlay .ext-status::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Running */
 #afip-ext-overlay .ext-status.running {
-  background: #fff3e0;
-  border: 1px solid #ffb74d;
-  color: #e65100;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
 }
 
+#afip-ext-overlay .ext-status.running::before {
+  border: 2px solid #f59e0b;
+  border-top-color: transparent;
+  animation: afip-ext-spinner 0.7s linear infinite;
+  background: none;
+}
+
+/* Success */
 #afip-ext-overlay .ext-status.success {
-  background: #e8f5e9;
-  border: 1px solid #a5d6a7;
-  color: #1b5e20;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
 }
 
+#afip-ext-overlay .ext-status.success::before {
+  background: #16a34a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2.5-2.5a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E") center/9px no-repeat;
+  border: none;
+  animation: none;
+}
+
+/* Error */
 #afip-ext-overlay .ext-status.error {
-  background: #fce8e6;
-  border: 1px solid #f28b82;
-  color: #b3261e;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
 }
 
-#afip-ext-overlay .ext-status.waiting {
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
-  color: #0d47a1;
+#afip-ext-overlay .ext-status.error::before {
+  background: #dc2626 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z'/%3E%3C/svg%3E") center/9px no-repeat;
+  border: none;
+  animation: none;
 }
 
+/* Message text fade-in */
+#afip-ext-overlay .ext-status .ext-status-text {
+  animation: afip-ext-fade-in 0.25s ease both;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ---- Progress steps (clean bars only) ---- */
 #afip-ext-overlay .ext-progress {
   display: flex;
-  gap: 4px;
-  margin-top: 6px;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 14px 12px;
 }
 
 #afip-ext-overlay .ext-step {
   flex: 1;
   height: 4px;
+  background: #e2e8f0;
   border-radius: 2px;
-  background: #e0e0e0;
-  transition: background 0.3s;
+  transition: background 0.35s ease;
 }
 
+/* Done step */
 #afip-ext-overlay .ext-step.done {
-  background: #0d904f;
+  background: #16a34a;
 }
 
+/* Active step */
 #afip-ext-overlay .ext-step.active {
-  background: #fb8c00;
-  animation: pulse 1.2s infinite;
+  background: #2563eb;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Highlight de campos siendo llenados */
+/* ---- Field highlight (injected on ARCA form fields) ---- */
 .afip-ext-highlight {
-  outline: 2px solid #1a73e8 !important;
+  outline: 2px solid #2563eb !important;
   outline-offset: 2px;
-  transition: outline 0.3s;
+  transition: outline-color 0.3s ease, outline-offset 0.3s ease;
 }
 
 .afip-ext-highlight-success {
-  outline: 2px solid #0d904f !important;
+  outline: 2px solid #16a34a !important;
   outline-offset: 2px;
+  transition: outline-color 0.4s ease;
 }

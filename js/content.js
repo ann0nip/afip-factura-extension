@@ -156,35 +156,54 @@
 
   let overlayEl = null;
 
+  function stopAndClose() {
+    running = false;
+    chrome.storage.local.set({ afipRunning: false });
+    chrome.runtime.sendMessage({
+      type: 'STATUS_UPDATE',
+      text: 'Automatizacion detenida por el usuario.',
+      status: 'info'
+    });
+    removeOverlay();
+  }
+
   function createOverlay() {
     if (overlayEl) overlayEl.remove();
 
     overlayEl = document.createElement('div');
     overlayEl.id = 'afip-ext-overlay';
 
+    // -- Header
     const header = document.createElement('div');
     header.className = 'ext-header';
 
     const title = document.createElement('span');
     title.className = 'ext-title';
-    title.textContent = 'Factura Autom\u00e1tica';
+    title.textContent = 'AutoFactura';
     header.appendChild(title);
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'ext-close';
-    closeBtn.title = 'Cerrar';
+    closeBtn.title = 'Detener y cerrar';
     closeBtn.textContent = '\u2715';
-    closeBtn.addEventListener('click', () => removeOverlay());
+    closeBtn.addEventListener('click', () => stopAndClose());
     header.appendChild(closeBtn);
 
     overlayEl.appendChild(header);
 
+    // -- Status message
     const statusDiv = document.createElement('div');
     statusDiv.className = 'ext-status running';
     statusDiv.id = 'ext-status-msg';
-    statusDiv.textContent = 'Iniciando automatizaci\u00f3n...';
+
+    const statusText = document.createElement('span');
+    statusText.className = 'ext-status-text';
+    statusText.textContent = 'Iniciando automatizaci\u00f3n';
+    statusDiv.appendChild(statusText);
+
     overlayEl.appendChild(statusDiv);
 
+    // -- Progress steps (clean bars)
     const progress = document.createElement('div');
     progress.className = 'ext-progress';
     for (let i = 1; i <= 7; i++) {
@@ -200,13 +219,26 @@
 
   function updateOverlay(msg, type = 'running', currentStep = 0) {
     if (!overlayEl) createOverlay();
+
     const statusEl = overlayEl.querySelector('#ext-status-msg');
     if (statusEl) {
-      statusEl.textContent = msg;
+      // Smooth text crossfade: replace the inner <span> so CSS animation re-triggers
+      const oldText = statusEl.querySelector('.ext-status-text');
+      const newText = document.createElement('span');
+      newText.className = 'ext-status-text';
+      newText.textContent = msg;
+
+      if (oldText) {
+        statusEl.replaceChild(newText, oldText);
+      } else {
+        statusEl.textContent = '';
+        statusEl.appendChild(newText);
+      }
+
       statusEl.className = 'ext-status ' + type;
     }
 
-    // Update progress bar
+    // Update progress indicators
     overlayEl.querySelectorAll('.ext-step').forEach(step => {
       const s = parseInt(step.dataset.step);
       step.className = 'ext-step';
@@ -217,8 +249,22 @@
 
   function removeOverlay() {
     if (overlayEl) {
-      overlayEl.remove();
-      overlayEl = null;
+      // Animate out before removing from DOM
+      overlayEl.classList.add('removing');
+      overlayEl.addEventListener('animationend', () => {
+        if (overlayEl) {
+          overlayEl.remove();
+          overlayEl = null;
+        }
+      }, { once: true });
+
+      // Safety fallback if animationend never fires
+      setTimeout(() => {
+        if (overlayEl) {
+          overlayEl.remove();
+          overlayEl = null;
+        }
+      }, 300);
     }
   }
 
@@ -226,7 +272,7 @@
 
   /** Paso 1: Selección de empresa */
   async function step1_selectEmpresa() {
-    updateOverlay('Paso 1: Seleccionando empresa...', 'running', 1);
+    updateOverlay('Paso 1: Seleccionando empresa', 'running', 1);
 
     const buttons = document.querySelectorAll('input.btn_empresa');
     if (buttons.length === 0) {
@@ -255,7 +301,7 @@
 
   /** Paso 2: Menú principal - click en "Generar Comprobante" */
   async function step2_menuPrincipal() {
-    updateOverlay('Paso 2: Accediendo a generación de comprobantes...', 'running', 2);
+    updateOverlay('Paso 2: Accediendo a generación de comprobantes', 'running', 2);
 
     // Intentar por ID
     let btn = document.querySelector('#btn_gen_cmp');
@@ -277,7 +323,7 @@
 
   /** Paso 3: Punto de venta y tipo de comprobante */
   async function step3_puntoDeVenta() {
-    updateOverlay('Paso 3: Configurando punto de venta...', 'running', 3);
+    updateOverlay('Paso 3: Configurando punto de venta', 'running', 3);
 
     // Punto de venta
     const pvSelect = document.querySelector('#puntodeventa');
@@ -302,7 +348,7 @@
     }
 
     // Esperar a que el AJAX cargue las opciones de tipo de comprobante
-    updateOverlay('Paso 3: Esperando carga de tipos de comprobante...', 'running', 3);
+    updateOverlay('Paso 3: Esperando carga de tipos de comprobante', 'running', 3);
     await sleep(2000);
 
     // Tipo de comprobante
@@ -325,7 +371,7 @@
 
   /** Paso 4: Datos de emisión */
   async function step4_datosEmisor() {
-    updateOverlay('Paso 4: Completando datos de emisión...', 'running', 4);
+    updateOverlay('Paso 4: Completando datos de emisión', 'running', 4);
 
     const dates = getDefaultDates();
     const fechas = config.fechas || {};
@@ -406,7 +452,7 @@
 
   /** Paso 5: Datos del receptor */
   async function step5_datosReceptor() {
-    updateOverlay('Paso 5: Completando datos del receptor...', 'running', 5);
+    updateOverlay('Paso 5: Completando datos del receptor', 'running', 5);
 
     const receptor = config.receptor || {};
 
@@ -439,7 +485,7 @@
       if (nroDocInput.onchange) nroDocInput.onchange.call(nroDocInput);
 
       // Esperar autocomplete de razón social
-      updateOverlay('Paso 5: Esperando autocompletado de CUIT...', 'running', 5);
+      updateOverlay('Paso 5: Esperando autocompletado de CUIT', 'running', 5);
       await sleep(2000);
     }
 
@@ -495,7 +541,7 @@
 
   /** Paso 6: Datos de la operación (ítems) */
   async function step6_datosOperacion() {
-    updateOverlay('Paso 6: Cargando ítems de la factura...', 'running', 6);
+    updateOverlay('Paso 6: Cargando ítems de la factura', 'running', 6);
 
     const items = config.items || [];
 
@@ -565,7 +611,7 @@
   /** Paso 7: Resumen — NO se hace click en confirmar */
   async function step7_resumen() {
     updateOverlay(
-      '✅ Factura lista para confirmar. Revisá los datos y hacé clic en "Confirmar Datos..." manualmente.',
+      'Factura lista para confirmar. Revisá los datos y hacé clic en "Confirmar Datos" manualmente.',
       'success',
       7
     );
@@ -620,7 +666,7 @@
       return;
     }
 
-    updateOverlay(`Iniciando desde paso ${currentStep}...`, 'running', currentStep);
+    updateOverlay(`Iniciando desde paso ${currentStep}`, 'running', currentStep);
     await sleep(500);
     await runStep(currentStep);
   }
@@ -642,7 +688,7 @@
         const currentStep = detectStep();
         if (currentStep > 0 && currentStep <= 7) {
           createOverlay();
-          updateOverlay(`Continuando paso ${currentStep}...`, 'running', currentStep);
+          updateOverlay(`Continuando paso ${currentStep}`, 'running', currentStep);
           await sleep(800); // Esperar a que la página termine de cargar
           await runStep(currentStep);
 
