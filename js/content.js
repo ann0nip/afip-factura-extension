@@ -100,6 +100,14 @@
     }
   }
 
+  /** Ejecuta una funcion en el contexto de la pagina via background script */
+  function callPageFunction(fnName) {
+    return chrome.runtime.sendMessage({
+      type: 'EXEC_PAGE_FUNCTION',
+      fnName: fnName
+    });
+  }
+
   /** Highlight visual temporal en un campo */
   function highlightField(el) {
     if (!el) return;
@@ -153,21 +161,41 @@
 
     overlayEl = document.createElement('div');
     overlayEl.id = 'afip-ext-overlay';
-    overlayEl.innerHTML = `
-      <div class="ext-header">
-        <span class="ext-title">Factura Automática</span>
-        <button class="ext-close" title="Cerrar">✕</button>
-      </div>
-      <div class="ext-status running" id="ext-status-msg">Iniciando automatización...</div>
-      <div class="ext-progress">
-        ${[1,2,3,4,5,6,7].map(i => `<div class="ext-step" data-step="${i}"></div>`).join('')}
-      </div>
-    `;
-    document.body.appendChild(overlayEl);
 
-    overlayEl.querySelector('.ext-close').addEventListener('click', () => {
-      removeOverlay();
-    });
+    const header = document.createElement('div');
+    header.className = 'ext-header';
+
+    const title = document.createElement('span');
+    title.className = 'ext-title';
+    title.textContent = 'Factura Autom\u00e1tica';
+    header.appendChild(title);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'ext-close';
+    closeBtn.title = 'Cerrar';
+    closeBtn.textContent = '\u2715';
+    closeBtn.addEventListener('click', () => removeOverlay());
+    header.appendChild(closeBtn);
+
+    overlayEl.appendChild(header);
+
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'ext-status running';
+    statusDiv.id = 'ext-status-msg';
+    statusDiv.textContent = 'Iniciando automatizaci\u00f3n...';
+    overlayEl.appendChild(statusDiv);
+
+    const progress = document.createElement('div');
+    progress.className = 'ext-progress';
+    for (let i = 1; i <= 7; i++) {
+      const step = document.createElement('div');
+      step.className = 'ext-step';
+      step.dataset.step = i;
+      progress.appendChild(step);
+    }
+    overlayEl.appendChild(progress);
+
+    document.body.appendChild(overlayEl);
   }
 
   function updateOverlay(msg, type = 'running', currentStep = 0) {
@@ -475,19 +503,10 @@
       const item = items[i];
       const n = i + 1;
 
-      // Si no es el primer ítem, agregar fila
+      // Si no es el primer ítem, agregar fila usando chrome.scripting API
       if (i > 0) {
         try {
-          // Llamar función de AFIP para agregar fila
-          if (typeof window.insertarFilaDetalle === 'function') {
-            window.insertarFilaDetalle();
-          } else {
-            // Intentar evaluar en el contexto de la página
-            const script = document.createElement('script');
-            script.textContent = 'if(typeof insertarFilaDetalle==="function") insertarFilaDetalle();';
-            document.body.appendChild(script);
-            script.remove();
-          }
+          await callPageFunction('insertarFilaDetalle');
           await sleep(500);
         } catch (e) {
           console.warn('No se pudo agregar fila de detalle:', e);
@@ -641,11 +660,14 @@
   // ===================== MESSAGE LISTENER =====================
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    // Only accept messages from our own extension
+    if (sender.id !== chrome.runtime.id) return;
+
     if (msg.action === 'START_AUTOMATION') {
-      chrome.storage.local.set({ afipRunning: true, afipConfig: msg.config }).then(() => {
-        startAutomation(msg.config);
-      });
+      // Storage already set by popup before sending this message
+      startAutomation(msg.config);
       sendResponse({ ok: true });
+      return;
     }
 
     if (msg.action === 'STOP_AUTOMATION') {
@@ -653,9 +675,8 @@
       chrome.storage.local.set({ afipRunning: false });
       removeOverlay();
       sendResponse({ ok: true });
+      return;
     }
-
-    return true; // async response
   });
 
   // ===================== INIT =====================

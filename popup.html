@@ -14,7 +14,7 @@
       <h1>AutoFactura ARCA</h1>
       <a href="https://auth.afip.gov.ar/contribuyente_/login.xhtml?action=SYSTEM&system=rcel" target="_blank"
         class="header-link" id="btn-afip-link">
-        <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="11" height="11">
           <path
             d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
           <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
@@ -184,6 +184,39 @@
         </svg>
         Guardar configuracion
       </button>
+
+      <details class="secondary-actions">
+        <summary class="secondary-actions-toggle">Mas opciones</summary>
+        <div class="secondary-actions-content">
+          <div class="action-group-row">
+            <button id="btn-export" class="btn btn-secondary">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                <path fill-rule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                  clip-rule="evenodd" />
+              </svg>
+              Exportar
+            </button>
+            <button id="btn-import" class="btn btn-secondary">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                <path fill-rule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+                  clip-rule="evenodd" />
+              </svg>
+              Importar
+            </button>
+          </div>
+          <input type="file" id="import-file" accept=".json" style="display:none;">
+          <button id="btn-reset" class="btn btn-outline full-width">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+              <path fill-rule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                clip-rule="evenodd" />
+            </svg>
+            Resetear a valores por defecto
+          </button>
+        </div>
+      </details>
     </section>
 
     <!-- Tab: Items -->
@@ -199,13 +232,12 @@
       </button>
     </section>
 
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
     <!-- Tab: Ejecutar -->
     <section id="tab-acciones" class="tab-content">
       <div class="actions-panel">
-
-        <div class="status-box" id="statusBox">
-          <p id="statusText">Listo para usar. Ingresa a ARCA Monotributo para comenzar.</p>
-        </div>
 
         <div class="action-group action-group--primary">
           <div class="action-group-label">Automatizacion</div>
@@ -229,39 +261,6 @@
 
         <!-- Hidden save button for JS compatibility -->
         <button id="btn-save" style="display:none;"></button>
-
-        <details class="secondary-actions">
-          <summary class="secondary-actions-toggle">Mas opciones</summary>
-          <div class="secondary-actions-content">
-            <div class="action-group-row">
-              <button id="btn-export" class="btn btn-secondary">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
-                  <path fill-rule="evenodd"
-                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clip-rule="evenodd" />
-                </svg>
-                Exportar
-              </button>
-              <button id="btn-import" class="btn btn-secondary">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
-                  <path fill-rule="evenodd"
-                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
-                    clip-rule="evenodd" />
-                </svg>
-                Importar
-              </button>
-            </div>
-            <input type="file" id="import-file" accept=".json" style="display:none;">
-            <button id="btn-reset" class="btn btn-outline full-width">
-              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
-                <path fill-rule="evenodd"
-                  d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                  clip-rule="evenodd" />
-              </svg>
-              Resetear a valores por defecto
-            </button>
-          </div>
-        </details>
 
       </div>
     </section>

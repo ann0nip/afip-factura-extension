@@ -6,11 +6,15 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
     "https://fe.afip.gob.ar/*"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  },
   "background": {
     "service_worker": "js/background.js"
   },

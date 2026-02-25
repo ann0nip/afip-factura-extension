@@ -56,14 +56,44 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // ===================== MESSAGE RELAY =====================
 // Relay mensajes del content script al popup
+const VALID_STATUSES = ['success', 'error', 'running', 'info'];
+const ALLOWED_PAGE_FUNCTIONS = ['insertarFilaDetalle'];
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'STATUS_UPDATE') {
-    // Re-broadcast a todos los popups abiertos
-    chrome.runtime.sendMessage(msg).catch(() => {
+    // Sanitize before relaying
+    const safeMsg = {
+      type: 'STATUS_UPDATE',
+      text: typeof msg.text === 'string' ? msg.text.substring(0, 500) : '',
+      status: VALID_STATUSES.includes(msg.status) ? msg.status : 'info'
+    };
+    chrome.runtime.sendMessage(safeMsg).catch(() => {
       // Popup might be closed, ignore
     });
+    return;
   }
-  return true;
+
+  // Execute a page-world function via chrome.scripting (MV3 safe approach)
+  if (msg.type === 'EXEC_PAGE_FUNCTION' && sender.tab) {
+    const fnName = msg.fnName;
+    if (!ALLOWED_PAGE_FUNCTIONS.includes(fnName)) {
+      sendResponse({ error: 'Function not allowed' });
+      return true;
+    }
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: 'MAIN',
+      func: (name) => {
+        if (typeof window[name] === 'function') window[name]();
+      },
+      args: [fnName]
+    }).then(() => {
+      sendResponse({ ok: true });
+    }).catch((err) => {
+      sendResponse({ error: err.message });
+    });
+    return true; // async response needed only for this handler
+  }
 });
 
 // ===================== TAB UPDATES =====================

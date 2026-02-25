@@ -282,19 +282,33 @@ async function loadConfig() {
   setUIFromConfig(config);
 }
 
-// ===================== STATUS =====================
+// ===================== STATUS (TOAST) =====================
+let toastTimer = null;
+
 function updateStatus(text, type = 'info') {
-  const box = $('#statusBox');
-  const statusText = $('#statusText');
-  box.className = 'status-box ' + (type || '');
-  statusText.textContent = text;
+  const toast = $('#toast');
+  toast.textContent = text;
+  toast.className = 'toast ' + (type || '');
+
+  // Show toast
+  requestAnimationFrame(() => {
+    toast.classList.add('visible');
+  });
+
+  // Auto-hide after delay (keep running visible longer)
+  clearTimeout(toastTimer);
+  const duration = type === 'running' ? 0 : 4000;
+  if (duration > 0) {
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('visible');
+    }, duration);
+  }
 }
 
 // ===================== RUN AUTOMATION =====================
 async function runAutomation() {
   // Auto-save before running
   const config = getConfigFromUI();
-  await chrome.storage.local.set({ afipConfig: config });
 
   // Check if we're on the AFIP page
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -307,6 +321,10 @@ async function runAutomation() {
     return;
   }
 
+  // Persist config AND running flag BEFORE sending message to content script
+  // This prevents the race condition where page navigation happens before storage write
+  await chrome.storage.local.set({ afipRunning: true, afipConfig: config });
+
   updateStatus('Ejecutando automatizacion...', 'running');
   $('#btn-run').disabled = true;
   $('#btn-stop').disabled = false;
@@ -318,6 +336,7 @@ async function runAutomation() {
       config: config
     });
   } catch (err) {
+    await chrome.storage.local.set({ afipRunning: false });
     updateStatus(`Error: ${err.message}. Recarga la pagina de ARCA e intenta de nuevo.`, 'error');
     $('#btn-run').disabled = false;
     $('#btn-stop').disabled = true;
@@ -325,9 +344,11 @@ async function runAutomation() {
 }
 
 async function stopAutomation() {
+  // Always clear the running flag in storage to prevent unexpected resumption
+  await chrome.storage.local.set({ afipRunning: false });
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
-    chrome.tabs.sendMessage(tab.id, { action: 'STOP_AUTOMATION' });
+    chrome.tabs.sendMessage(tab.id, { action: 'STOP_AUTOMATION' }).catch(() => {});
   }
   updateStatus('Automatizacion detenida por el usuario.', 'info');
   $('#btn-run').disabled = false;
@@ -350,6 +371,17 @@ function importConfig() {
   $('#import-file').click();
 }
 
+function isValidConfig(obj) {
+  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) return false;
+  // Reject prototype pollution attempts (check own properties only)
+  if (Object.prototype.hasOwnProperty.call(obj, '__proto__')) return false;
+  if (Object.prototype.hasOwnProperty.call(obj, 'prototype')) return false;
+  if (obj.items && (!Array.isArray(obj.items) || obj.items.length > 50)) return false;
+  if (obj.receptor && typeof obj.receptor !== 'object') return false;
+  if (obj.fechas && typeof obj.fechas !== 'object') return false;
+  return true;
+}
+
 function handleImportFile(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -357,6 +389,10 @@ function handleImportFile(e) {
   reader.onload = (ev) => {
     try {
       const config = JSON.parse(ev.target.result);
+      if (!isValidConfig(config)) {
+        updateStatus('Archivo JSON invalido: estructura incorrecta.', 'error');
+        return;
+      }
       setUIFromConfig(config);
       updateStatus('Configuracion importada correctamente.', 'success');
     } catch (err) {
