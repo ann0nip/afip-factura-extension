@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoFactura ARCA</title>
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1>AutoFactura ARCA</h1>
+      <p class="subtitle">Completa los datos y ejecuta la automatizacion</p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="config">
+        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+        </svg>
+        Configuracion
+      </button>
+      <button class="tab" data-tab="items">
+        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6zm2 2h4v1H8V6zm0 3h4v1H8V9zm0 3h3v1H8v-1z"/>
+        </svg>
+        Items
+      </button>
+      <button class="tab" data-tab="acciones">
+        <svg class="tab-icon" viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+        </svg>
+        Ejecutar
+      </button>
+    </nav>
+
+    <!-- Tab: Configuracion -->
+    <section id="tab-config" class="tab-content active">
+      <fieldset>
+        <legend>Emisor</legend>
+        <div class="field">
+          <label for="empresaNombre">Empresa / Nombre</label>
+          <input type="text" id="empresaNombre" placeholder="Ej: EMPRESA S.R.L.">
+        </div>
+        <div class="field">
+          <label for="puntoDeVenta">Punto de Venta</label>
+          <input type="text" id="puntoDeVenta" placeholder="Ej: 1">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="tipoComprobante">Tipo de Comprobante</label>
+            <select id="tipoComprobante">
+              <option value="1">Factura A</option>
+              <option value="6">Factura B</option>
+              <option value="2" selected>Factura C</option>
+              <option value="19">Factura E</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="idConcepto">Concepto</label>
+            <select id="idConcepto">
+              <option value="1">Productos</option>
+              <option value="2" selected>Servicios</option>
+              <option value="3">Productos y Servicios</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="actividadAsociada">Actividad Asociada (codigo)</label>
+          <input type="text" id="actividadAsociada" placeholder="Ej: 620100">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Moneda</legend>
+        <div class="field inline">
+          <label>
+            <input type="checkbox" id="monedaExtranjera">
+            Moneda Extranjera
+          </label>
+        </div>
+        <div class="field" id="monedaGroup" style="display:none;">
+          <label for="moneda">Moneda</label>
+          <select id="moneda">
+            <option value="PES" selected>Pesos Argentinos</option>
+            <option value="DOL">Dolar Estadounidense</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Receptor</legend>
+        <div class="field">
+          <label for="receptorCondicionIVA">Condicion IVA</label>
+          <select id="receptorCondicionIVA">
+            <option value="1" selected>IVA Responsable Inscripto</option>
+            <option value="4">IVA Sujeto Exento</option>
+            <option value="5">Consumidor Final</option>
+            <option value="6">Responsable Monotributo</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="receptorTipoDoc">Tipo Documento</label>
+            <select id="receptorTipoDoc">
+              <option value="80" selected>CUIT</option>
+              <option value="86">CUIL</option>
+              <option value="96">DNI</option>
+              <option value="99">Doc. (Otro)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="receptorNroDoc">Nro. Documento</label>
+            <input type="text" id="receptorNroDoc" placeholder="Ej: 20123456789">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="receptorEmail">Email (opcional)</label>
+            <input type="email" id="receptorEmail" placeholder="cliente@example.com">
+          </div>
+          <div class="field">
+            <label for="formaDePago">Forma de Pago</label>
+            <select id="formaDePago">
+              <option value="91" selected>Transferencia Bancaria</option>
+              <option value="1">Contado</option>
+              <option value="69">Tarjeta de Debito</option>
+              <option value="68">Tarjeta de Credito</option>
+              <option value="96">Cheque</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Fechas (opcional - se autocalculan)</legend>
+        <div class="field-row field-row--range">
+          <div class="field">
+            <label for="fechaEmision">Fecha Emision</label>
+            <input type="text" id="fechaEmision" placeholder="DD/MM/YYYY">
+          </div>
+          <div class="range-arrow-spacer"></div>
+          <div class="field">
+            <label for="vencimientoPago">Vencimiento Pago</label>
+            <input type="text" id="vencimientoPago" placeholder="DD/MM/YYYY">
+          </div>
+        </div>
+        <div class="field-row field-row--range">
+          <div class="field">
+            <label for="periodoDesde">Periodo Desde</label>
+            <input type="text" id="periodoDesde" placeholder="DD/MM/YYYY">
+          </div>
+          <svg class="range-arrow" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+          <div class="field">
+            <label for="periodoHasta">Periodo Hasta</label>
+            <input type="text" id="periodoHasta" placeholder="DD/MM/YYYY">
+          </div>
+        </div>
+      </fieldset>
+
+      <button id="btn-save-config" class="btn btn-save-bottom full-width">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path d="M5.5 3A2.5 2.5 0 003 5.5v9A2.5 2.5 0 005.5 17h9a2.5 2.5 0 002.5-2.5v-7.086a1.5 1.5 0 00-.44-1.06l-2.914-2.915A1.5 1.5 0 0012.586 3H5.5zM6 14v-3h8v3H6z"/>
+        </svg>
+        Guardar configuracion
+      </button>
+    </section>
+
+    <!-- Tab: Items -->
+    <section id="tab-items" class="tab-content">
+      <div id="items-container"></div>
+      <button id="btn-add-item" class="btn btn-secondary full-width">+ Agregar Item</button>
+      <button id="btn-save-items" class="btn btn-save-bottom full-width">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path d="M5.5 3A2.5 2.5 0 003 5.5v9A2.5 2.5 0 005.5 17h9a2.5 2.5 0 002.5-2.5v-7.086a1.5 1.5 0 00-.44-1.06l-2.914-2.915A1.5 1.5 0 0012.586 3H5.5zM6 14v-3h8v3H6z"/>
+        </svg>
+        Guardar items
+      </button>
+    </section>
+
+    <!-- Tab: Ejecutar -->
+    <section id="tab-acciones" class="tab-content">
+      <div class="actions-panel">
+
+        <div class="status-box" id="statusBox">
+          <p id="statusText">Listo para usar. Ingresa a ARCA Monotributo para comenzar.</p>
+        </div>
+
+        <a href="https://auth.afip.gov.ar/contribuyente_/login.xhtml?action=SYSTEM&system=rcel"
+           target="_blank" class="btn btn-link full-width" id="btn-afip-link">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+          </svg>
+          Ir a ARCA Monotributo (Factura Electronica)
+        </a>
+
+        <div class="action-group action-group--primary">
+          <div class="action-group-label">Automatizacion</div>
+          <button id="btn-run" class="btn btn-success full-width action-group-main">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+            </svg>
+            Ejecutar automatizacion
+          </button>
+          <button id="btn-stop" class="btn btn-danger full-width" disabled>
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"/>
+            </svg>
+            Detener
+          </button>
+        </div>
+
+        <!-- Hidden save button for JS compatibility -->
+        <button id="btn-save" style="display:none;"></button>
+
+        <details class="secondary-actions">
+          <summary class="secondary-actions-toggle">Mas opciones</summary>
+          <div class="secondary-actions-content">
+            <div class="action-group-row">
+              <button id="btn-export" class="btn btn-secondary">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                  <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+                Exportar
+              </button>
+              <button id="btn-import" class="btn btn-secondary">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                  <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+                Importar
+              </button>
+            </div>
+            <input type="file" id="import-file" accept=".json" style="display:none;">
+            <button id="btn-reset" class="btn btn-outline full-width">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+              </svg>
+              Resetear a valores por defecto
+            </button>
+          </div>
+        </details>
+
+      </div>
+    </section>
+  </div>
+
+  <script src="js/popup.js"></script>
+</body>
+</html>
