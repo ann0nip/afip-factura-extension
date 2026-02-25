@@ -59,10 +59,25 @@ body {
   margin-bottom: 1px;
 }
 
-.subtitle {
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 10px;
   font-size: 11px;
-  opacity: 0.8;
-  font-weight: 400;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.header-link:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
 }
 
 /* ----------------------------------------
@@ -355,16 +370,6 @@ legend {
   background: #f1f3f4;
 }
 
-.btn-link {
-  background: var(--primary-light);
-  color: var(--primary);
-  text-decoration: none;
-  border: 1px solid #c5d9f2;
-  font-weight: 500;
-}
-.btn-link:hover {
-  background: #d2e3fc;
-}
 
 /* Save button at bottom of Config/Items tabs */
 .btn-save-bottom {
@@ -377,6 +382,11 @@ legend {
 .btn-save-bottom:hover:not(:disabled) {
   background: var(--primary-dark);
   box-shadow: var(--shadow-md);
+}
+
+.btn-save-success {
+  background: var(--success) !important;
+  transition: background 0.2s ease;
 }
 
 /* ----------------------------------------
@@ -523,6 +533,35 @@ details[open] > .secondary-actions-toggle::before {
 .secondary-actions-content .action-group-row {
   grid-template-columns: 1fr 1fr;
   margin-bottom: 0;
+}
+
+/* ----------------------------------------
+   Footer
+   ---------------------------------------- */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 10px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer-link:hover {
+  color: var(--primary);
+}
+
+.footer-sep {
+  color: var(--border);
 }
 
 /* ----------------------------------------

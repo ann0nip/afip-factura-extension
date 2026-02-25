@@ -258,10 +258,21 @@ function toggleMonedaGroup() {
   $('#monedaGroup').style.display = $('#monedaExtranjera').checked ? 'block' : 'none';
 }
 
-async function saveConfig() {
+async function saveConfig(triggerBtn) {
   const config = getConfigFromUI();
   await chrome.storage.local.set({ afipConfig: config });
   updateStatus('Configuracion guardada correctamente.', 'success');
+
+  // Visual feedback on the button that was clicked
+  if (triggerBtn && triggerBtn.classList) {
+    const originalText = triggerBtn.textContent;
+    triggerBtn.classList.add('btn-save-success');
+    triggerBtn.textContent = 'Guardado!';
+    setTimeout(() => {
+      triggerBtn.classList.remove('btn-save-success');
+      triggerBtn.textContent = originalText;
+    }, 1500);
+  }
 }
 
 async function loadConfig() {
@@ -377,9 +388,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Buttons
   $('#btn-add-item').addEventListener('click', addItem);
-  $('#btn-save').addEventListener('click', saveConfig);
-  $('#btn-save-config').addEventListener('click', saveConfig);
-  $('#btn-save-items').addEventListener('click', saveConfig);
+  $('#btn-save').addEventListener('click', (e) => saveConfig(e.currentTarget));
+  $('#btn-save-config').addEventListener('click', (e) => saveConfig(e.currentTarget));
+  $('#btn-save-items').addEventListener('click', (e) => saveConfig(e.currentTarget));
   $('#btn-run').addEventListener('click', runAutomation);
   $('#btn-stop').addEventListener('click', stopAutomation);
   $('#btn-export').addEventListener('click', exportConfig);
